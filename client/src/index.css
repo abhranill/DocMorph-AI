@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-body antialiased;
+  }
+
+  .dark body {
+    @apply bg-canvas-dark text-ink-dark;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+
+  /* Visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid #7C3AED;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgba(124, 58, 237, 0.25);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-morph-gradient bg-clip-text text-transparent;
+  }
+
+  .glass {
+    @apply bg-white/60 backdrop-blur-lg border border-white/40;
+  }
+
+  .glass-dark {
+    @apply bg-surface-dark/50 backdrop-blur-lg border border-white/10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
