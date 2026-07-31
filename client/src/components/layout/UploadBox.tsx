@@ -1,14 +1,41 @@
 import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import axios from "axios";
 
 function UploadBox() {
   const [file, setFile] = useState<File | null>(null);
+  const [pdfText, setPdfText] = useState("");
 
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
-      console.log(acceptedFiles[0]);
+  const onDrop = async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+
+    const selectedFile = acceptedFiles[0];
+    setFile(selectedFile);
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      // Save extracted PDF text
+      setPdfText(response.data.text);
+
+      alert("✅ File uploaded successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Upload failed.");
     }
   };
 
@@ -45,13 +72,28 @@ function UploadBox() {
         </p>
 
         {file && (
-          <div className="mt-4 rounded-lg bg-white p-3 shadow">
+          <div className="mt-4 rounded-lg bg-white p-4 shadow">
             <p className="font-semibold text-blue-700">
               📄 {file.name}
             </p>
+
             <p className="text-sm text-gray-500">
               {(file.size / 1024).toFixed(2)} KB
             </p>
+          </div>
+        )}
+
+        {pdfText && (
+          <div className="mt-6 rounded-xl bg-white p-5 shadow text-left">
+            <h3 className="mb-3 text-lg font-bold text-blue-700">
+              📄 Extracted Text
+            </h3>
+
+            <div className="max-h-80 overflow-y-auto rounded-lg border bg-gray-50 p-4">
+              <p className="whitespace-pre-wrap text-gray-700">
+                {pdfText}
+              </p>
+            </div>
           </div>
         )}
 
