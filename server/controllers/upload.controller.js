@@ -1,4 +1,5 @@
 const { extractTextFromPDF } = require("../services/pdf.service");
+const { summarizeText } = require("../services/ai.service");
 
 exports.uploadFile = async (req, res) => {
   try {
@@ -10,20 +11,26 @@ exports.uploadFile = async (req, res) => {
     }
 
     const extractedText = await extractTextFromPDF(req.file.path);
-
+    const summary = await summarizeText(extractedText);
     res.status(200).json({
-      success: true,
-      message: "File uploaded successfully!",
-      fileName: req.file.filename,
-      originalName: req.file.originalname,
-      text: extractedText,
-    });
+  success: true,
+  message: "File uploaded successfully!",
+  fileName: req.file.filename,
+  originalName: req.file.originalname,
+  text: extractedText,
+  summary,
+   });
   } catch (error) {
-    console.error(error);
+  console.log("========== GEMINI ERROR ==========");
+  console.error(error);
 
-    res.status(500).json({
-      success: false,
-      message: "Failed to extract PDF text",
-    });
+  if (error.response) {
+    console.log(error.response.data);
   }
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
