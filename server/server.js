@@ -1,3 +1,4 @@
+const pdfImageRoutes = require("./routes/pdf-image.routes");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -28,13 +29,10 @@ app.use(
   express.static(path.join(__dirname, "converted"))
 );
 
-// =========================
-// API Routes
-// =========================
 app.use("/upload", uploadRoutes);
 app.use("/chat", chatRoutes);
 app.use("/convert", convertRoutes);
-
+app.use("/pdf-image", pdfImageRoutes);
 // =========================
 // Home Route
 // =========================
