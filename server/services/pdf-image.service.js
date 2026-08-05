@@ -27,6 +27,7 @@ async function pdfToImages(pdfPath) {
   return files.map((file) => ({
     fileName: file,
     url: `/converted/${file}`,
+    filePath: path.join(outputDir, file),
   }));
 }
 
