@@ -1,7 +1,13 @@
+import Navbar from "../components/layout/Navbar";
 import ImageConverter from "../components/converters/ImageConverter";
 
 function ImageConverterPage() {
-  return <ImageConverter />;
+  return (
+    <>
+      <Navbar />
+      <ImageConverter />
+    </>
+  );
 }
 
 export default ImageConverterPage;

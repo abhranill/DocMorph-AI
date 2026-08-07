@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Image,
+  FileText,
   Upload,
   Loader2,
 } from "lucide-react";
@@ -8,29 +8,20 @@ import {
 import ConverterLayout from "./ConverterLayout";
 import { convertFile } from "../../services/converter.service";
 
-function ImageConverter() {
-  const [conversion, setConversion] = useState("jpg-png");
+function WordConverter() {
   const [file, setFile] = useState<File | null>(null);
   const [converting, setConverting] = useState(false);
 
   const handleConvert = async () => {
     if (!file) {
-      alert("Please select an image.");
+      alert("Please select a Word file.");
       return;
     }
 
     try {
       setConverting(true);
 
-      const blob = await convertFile(file, conversion);
-
-      const extension =
-        conversion === "png-webp"
-          ? "webp"
-          : conversion === "jpg-png" ||
-            conversion === "jpeg-png"
-          ? "png"
-          : "jpg";
+      const blob = await convertFile(file, "word-pdf");
 
       const url = window.URL.createObjectURL(blob);
 
@@ -38,7 +29,7 @@ function ImageConverter() {
 
       link.href = url;
 
-      link.download = `converted.${extension}`;
+      link.download = file.name.replace(/\.(doc|docx)$/i, ".pdf");
 
       document.body.appendChild(link);
 
@@ -47,7 +38,6 @@ function ImageConverter() {
       document.body.removeChild(link);
 
       window.URL.revokeObjectURL(url);
-
     } catch (err) {
       console.error(err);
       alert("Conversion failed.");
@@ -58,53 +48,11 @@ function ImageConverter() {
 
   return (
     <ConverterLayout
-      title="Image Converter"
-      description="Convert JPG, PNG and WEBP images in seconds."
-      icon={
-        <Image
-          size={45}
-          className="text-blue-600"
-        />
-      }
+      title="Word Converter"
+      description="Convert DOC and DOCX files into PDF."
+      icon={<FileText size={45} className="text-blue-600" />}
     >
       <div className="space-y-8">
-
-        <div>
-
-          <label className="mb-3 block font-semibold">
-            Conversion Type
-          </label>
-
-          <select
-            value={conversion}
-            onChange={(e) =>
-              setConversion(e.target.value)
-            }
-            className="w-full rounded-xl border p-4"
-          >
-            <option value="jpg-png">
-              JPG → PNG
-            </option>
-
-            <option value="png-jpg">
-              PNG → JPG
-            </option>
-
-            <option value="jpeg-png">
-              JPEG → PNG
-            </option>
-
-            <option value="png-webp">
-              PNG → WEBP
-            </option>
-
-            <option value="webp-jpg">
-              WEBP → JPG
-            </option>
-
-          </select>
-
-        </div>
 
         <label className="flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50 p-12 hover:border-blue-600">
 
@@ -114,17 +62,17 @@ function ImageConverter() {
           />
 
           <h2 className="text-2xl font-bold">
-            Upload Image
+            Upload Word File
           </h2>
 
           <p className="mt-3 text-gray-500">
-            JPG • PNG • JPEG • WEBP
+            DOC or DOCX
           </p>
 
           <input
             hidden
             type="file"
-            accept=".jpg,.jpeg,.png,.webp"
+            accept=".doc,.docx"
             onChange={(e) => {
               if (e.target.files) {
                 setFile(e.target.files[0]);
@@ -163,12 +111,10 @@ function ImageConverter() {
                 size={20}
                 className="animate-spin"
               />
-
               Converting...
-
             </>
           ) : (
-            "Convert Image"
+            "Convert to PDF"
           )}
         </button>
 
@@ -177,4 +123,4 @@ function ImageConverter() {
   );
 }
 
-export default ImageConverter;
+export default WordConverter;
