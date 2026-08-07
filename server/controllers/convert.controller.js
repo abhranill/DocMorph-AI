@@ -2,9 +2,8 @@ const path = require("path");
 const fs = require("fs");
 
 const { convertImage } = require("../services/image.service");
-const { pdfToImages } = require("../services/pdf-image.service");
-const { imageToPdf: convertImageToPdfFile } = require("../services/image-to-pdf.service");
-const { zipFiles } = require("../services/zip.service");
+const { imageToPdf } = require("../services/image-to-pdf.service");
+const { wordToPdf } = require("../services/word.service");
 
 exports.convertFile = async (req, res) => {
   try {
@@ -15,146 +14,111 @@ exports.convertFile = async (req, res) => {
       });
     }
 
-    const format = req.body.format;
+    const { conversion } = req.body;
 
-    const outputName =
-      Date.now() + "." + format;
+    // ============================
+    // IMAGE CONVERSIONS
+    // ============================
 
-    const outputPath = path.join(
-      __dirname,
-      "..",
-      "converted",
-      outputName
-    );
+    if (
+      conversion === "jpg-png" ||
+      conversion === "png-jpg" ||
+      conversion === "jpeg-png" ||
+      conversion === "png-webp" ||
+      conversion === "webp-jpg"
+    ) {
+      let format = "png";
 
-    await convertImage(
-      req.file.path,
-      outputPath,
-      format
-    );
+      switch (conversion) {
+        case "jpg-png":
+          format = "png";
+          break;
 
-    res.json({
-      success: true,
-      downloadUrl:
-        "http://localhost:5000/converted/" +
-        outputName,
+        case "png-jpg":
+          format = "jpg";
+          break;
+
+        case "jpeg-png":
+          format = "png";
+          break;
+
+        case "png-webp":
+          format = "webp";
+          break;
+
+        case "webp-jpg":
+          format = "jpg";
+          break;
+      }
+
+      const outputDir = path.join(
+        __dirname,
+        "../converted"
+      );
+
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, {
+          recursive: true,
+        });
+      }
+
+      const outputPath = path.join(
+        outputDir,
+        `${Date.now()}.${format}`
+      );
+
+      await convertImage(
+        req.file.path,
+        outputPath,
+        format
+      );
+
+      return res.download(outputPath);
+    }
+
+    // ============================
+    // IMAGE → PDF
+    // ============================
+
+    if (conversion === "image-pdf") {
+      const result = await imageToPdf(req.file.path);
+
+      return res.download(
+        path.join(
+          __dirname,
+          "../converted",
+          result.fileName
+        )
+      );
+    }
+
+    // ============================
+    // WORD → PDF
+    // ============================
+
+    if (conversion === "word-pdf") {
+      const result = await wordToPdf(req.file.path);
+
+      return res.download(
+        path.join(
+          __dirname,
+          "../converted",
+          result.fileName
+        )
+      );
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Unsupported conversion.",
     });
+
   } catch (err) {
-    console.error("CONVERT_FILE ERROR:", err);
+    console.error(err);
 
     res.status(500).json({
       success: false,
-      message: err.message,
-    });
-  }
-};
-
-exports.pdfToImage = async (req, res) => {
-  let images = [];
-  let zipPath = "";
-
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No PDF uploaded",
-      });
-    }
-
-    images = await pdfToImages(req.file.path);
-
-    if (!images.length) {
-      return res.status(500).json({
-        success: false,
-        message: "No pages could be converted from this PDF",
-      });
-    }
-
-    const zipName = `converted-${Date.now()}.zip`;
-
-    zipPath = path.join(
-      __dirname,
-      "..",
-      "converted",
-      zipName
-    );
-
-    await zipFiles(
-      images.map((img) => img.filePath),
-      zipPath
-    );
-
-    res.download(zipPath, "converted.zip", (err) => {
-      if (err) {
-        console.error("PDF_TO_IMAGE DOWNLOAD ERROR:", err);
-      }
-
-      // cleanup temp files
-      images.forEach((img) => {
-        if (fs.existsSync(img.filePath)) {
-          fs.unlinkSync(img.filePath);
-        }
-      });
-
-      if (fs.existsSync(zipPath)) {
-        fs.unlinkSync(zipPath);
-      }
-
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
-    });
-  } catch (err) {
-    console.error("PDF_TO_IMAGE ERROR:", err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message || "PDF to JPG conversion failed",
-    });
-  }
-};
-
-exports.imageToPdf = async (req, res) => {
-  let outputPath = "";
-
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No image uploaded",
-      });
-    }
-
-    const outputName = `converted-${Date.now()}.pdf`;
-
-    outputPath = path.join(
-      __dirname,
-      "..",
-      "converted",
-      outputName
-    );
-
-    await convertImageToPdfFile(req.file.path, outputPath);
-
-    res.download(outputPath, "converted.pdf", (err) => {
-      if (err) {
-        console.error("IMAGE_TO_PDF DOWNLOAD ERROR:", err);
-      }
-
-      if (fs.existsSync(outputPath)) {
-        fs.unlinkSync(outputPath);
-      }
-
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
-    });
-  } catch (err) {
-    console.error("IMAGE_TO_PDF ERROR:", err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message || "JPG to PDF conversion failed",
+      message: "Conversion failed.",
     });
   }
 };

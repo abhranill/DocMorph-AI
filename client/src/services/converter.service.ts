@@ -2,12 +2,17 @@ import axios from "axios";
 
 const API = "http://localhost:5000";
 
-export const convertPdfToImage = async (file: File) => {
+export async function convertFile(
+  file: File,
+  conversion: string
+): Promise<Blob> {
   const formData = new FormData();
+
   formData.append("file", file);
+  formData.append("conversion", conversion);
 
   const response = await axios.post(
-    `${API}/convert/pdf-to-image`,
+    `${API}/convert`,
     formData,
     {
       headers: {
@@ -18,22 +23,4 @@ export const convertPdfToImage = async (file: File) => {
   );
 
   return response.data;
-};
-
-export const convertImageToPdf = async (file: File) => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await axios.post(
-    `${API}/convert/image-to-pdf`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      responseType: "blob",
-    }
-  );
-
-  return response.data;
-};
+}
