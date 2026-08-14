@@ -8,7 +8,7 @@ function Home() {
     <>
       <Navbar />
 
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-slate-50">
 
         <Hero />
 
@@ -16,9 +16,7 @@ function Home() {
           <UploadBox />
         </section>
 
-        <section className="mt-24 px-6 pb-24">
-          <ConverterHub />
-        </section>
+        <ConverterHub />
 
       </main>
     </>
