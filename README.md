@@ -6,7 +6,8 @@ DocMorph AI is a full-stack web application that combines **AI-powered document 
 
 The project is being developed with a focus on clean architecture, reusable components, and practical document-processing features.
 
----
+----
+
 
 ## ✨ Features
 
